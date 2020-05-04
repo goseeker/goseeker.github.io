@@ -1,0 +1,120 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><meta name="author" content="goseeker"><meta property="og:image" content="/src/img/ogimg-goseeker.png"><link rel="icon" href="/favicon.ico" type="image/x-icon"><link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" crossorigin="anonymous"><link rel="stylesheet" href="/src/css/theme.css">
+    <title>Создание веб-сервера в Go</title>
+    <meta name="description" content="+++DESCRIPTION+++">
+    <meta name="keywords" content="создать, веб, сервер, web, server, golang, go, seeker, website">
+</head><body>
+<header><div class="collapse bg-dark" id="navbarHeader"><div class="container"><div class="row"><div class="col-sm-8 col-md-7 py-4"><h4 class="text-white">О сайте</h4><p class="text-muted">Увлеченный разработчик или новичок ищущий решения и материалы по языку программирования Go - этот сайт для тебя. Здесь ты найдешь статьи, рецепты, образцы кода, полезные ссылки и конспекты по Golang.</p></div><div class="col-sm-4 offset-md-1 py-4"><h4 class="text-white">Контакты</h4><ul class="list-unstyled"><li><a href="mailto:gocmto@gmail.com" class="text-white">gocmto@gmail.com</a></li></ul></div></div></div></div><div class="navbar navbar-dark bg-dark shadow-sm"><div class="container d-flex justify-content-between"><a href="/" class="navbar-brand d-flex align-items-center"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" aria-hidden="true" class="mr-2" viewBox="0 0 24 24" focusable="false"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><strong>Golang</strong></a><button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarHeader" aria-controls="navbarHeader" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button></div></div></header>
+
+<main role="main">
+    <div class="container">
+        <h1>Создание веб-сервера в Go</h1>
+        <p class="lead text-muted">
+            Библиотека Go делает <strong>написание веб-сервера</strong>, который отвечает на запросы клиентов, простым и легким.
+            Сейчас мы создадим и <u>опишем минимальный сервер</u>, который возвращает компонент пути из URL, использованного для обращения к серверу.
+            Иначе говоря, если запрос имеет вид http://localhost:8000/hello, то ответ будет выглядеть как <code>URL.Path = "/hello"</code>.
+            Иными словами, мы напишем минимальный <code>echo-сервер</code>.
+        </p>
+        <p class="lead text-muted">
+            <pre>// минимальный "echo"-сервер.
+package main
+
+import (
+	"fmt"
+	"log"
+	"net/http"
+)
+
+func main() {
+	http.HandleFunc("/", handler) // каждый запрос вызывает обработчик
+	log.Fatal(http.ListenAndServe("localhost:8000", nil))
+}
+
+// Обработчик возвращает компонент пути из URL запроса
+func handler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "URL.Path = %q\n", r.URL.Path)
+}</pre>
+        </p>
+        <p class="lead text-muted">
+            Программа содержит буквально <code>несколько строк</code>, потому что библиотечные функции выполняют большую часть работы.
+            Функция main связывает функцию-обработчик с входящим URL, который начинается с /,
+            и запускает сервер, прослушивающий порт 8000 в ожидании входящих запросов.
+            Запрос представлен структурой типа <code>http.Request</code>, которая содержит ряд связанных полей,
+            одно из которых представляет собой URL входящего запроса.
+            Полученный запрос передается функции-обработчику, которая извлекает компонент пути (/hello)
+            из URL запроса и <strong>отправляет его обратно</strong> в качестве ответа с помощью fmt.Fpnintf.
+        </p>
+        <p class="lead text-muted">
+            Давайте запустим наш сервер в <strong>фоновом режиме</strong>.
+            В Mac OS X или <code>Linux</code> добавьте к команде амперсанд (&);
+            <br><strong><code>$ go run server.go &</code></strong><br>
+            в Microsoft <code>Windows</code> необходимо запустить команду без амперсанда в отдельном окне.
+        </p>
+        <p class="lead text-muted">
+            Затем осуществим клиентский запрос из командной строки: <br>
+            <pre>$ go build fetch
+$ ./fetch http://localhost:8000
+URL.Path = "/"
+$ ./fetch http://localhost:8000/help
+URL.Path = "/help"</pre>
+        </p>
+        <p class="lead text-muted">
+            Расширять возможности сервера довольно легко.
+            Одним полезным расширением является конкретный URL, который возвращает <strong>некоторое состояние</strong>.
+            Например, этот вариант нашего минисервера делает то же, что и предыдущий,
+            но при этом еще и подсчитывает количество запросов;
+            запрос к URL /count возвращает это количество, за исключением самого запроса /count:
+        </p>
+        <p class="lead text-muted">
+            <pre>// минимальный "echo"-сервер со счетчиком запросов,
+package main
+
+import (
+	"fmt"
+	"log"
+	"net/http"
+	"sync"
+)
+
+var mu sync.Mutex
+var count int
+
+func main() {
+	http.HandleFunc("/", handler)
+	http.HandleFunc("/count", counter)
+	log.Fatal(http.ListenAndServe("localhost:8000", nil))
+}
+
+// Обработчик, возвращающий компонент пути запрашиваемого URL.
+func handler(w http.ResponseWriter, r *http.Request) {
+	mu.Lock()
+	count++
+	mu.Unlock()
+	fmt.Fprintf(w, "URL.Path = %q\n", r.URL.Path)
+}
+
+// Счетчик, возвращающий количество сделанных запросов,
+func counter(w http.ResponseWriter, r *http.Request) {
+	mu.Lock()
+	fmt.Fprintf(w, "Count %d\n", count)
+	mu.Unlock()
+}</pre>
+        </p>
+        <p class="lead text-muted">
+            У сервера имеется два обработчика, и запрашиваемый URL определяет, какой из них будет вызван:
+            - запрос /count вызывает counter, <br>
+            - а все прочие — handler.<br>
+            Сервер запускает обработчик <strong>для каждого входящего запроса</strong> в отдельной go-подпрограмме(<code>горутине</code>),
+            так что <u>несколько запросов могут обрабатываться одновременно</u>.
+            Однако если два параллельных запроса попытаются обновить счетчик count в один и тот же момент времени,
+            он может быть увеличен не согласованно;
+            в такой программе может возникнуть серьезная ошибка под названием <strong>состояние гонки</strong> (<code>race condition</code>).
+            <u>Чтобы избежать этой проблемы, нужно гарантировать, что доступ к переменной получает не более одной go-подпрограммы одновременно</u>.
+            Для этого каждый доступ к переменной должен быть окружен вызовами <code>mu.Lock()</code> и <code>mu.Unlock()</code>.
+        </p>
+    </div>
+</main>
+
+<footer class="text-muted"><div class="container"><hr><p>&copy; 2020 | <a href="/">Go Seeker</a> | Ищущий Go | <a href="/list.html">Все материалы</a></p></div></footer>
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" crossorigin="anonymous"></script><script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
+<script src="/src/js/theme.js"></script>
+</body></html>
