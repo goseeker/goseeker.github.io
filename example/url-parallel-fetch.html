@@ -1,0 +1,123 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><meta name="author" content="goseeker"><meta property="og:image" content="/src/img/ogimg-goseeker.png"><link rel="icon" href="/favicon.ico" type="image/x-icon"><link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" crossorigin="anonymous"><link rel="stylesheet" href="/src/css/theme.css">
+    <title>Параллельная выборка URL</title>
+    <meta name="description" content="Наиболее интересным и полезным в Go является поддержка параллельного программирования. Сейчас мы попробуем на вкус основные механизмы параллельности Go — go-подпрограммы (горутины) и каналы.">
+    <meta name="keywords" content="горутин, горутины, канал, go-подпрограмма, параллельно, url, выборка, golang, go, seeker, website">
+</head><body>
+<header><div class="collapse bg-dark" id="navbarHeader"><div class="container"><div class="row"><div class="col-sm-8 col-md-7 py-4"><h4 class="text-white">О сайте</h4><p class="text-muted">Увлеченный разработчик или новичок ищущий решения и материалы по языку программирования Go - этот сайт для тебя. Здесь ты найдешь статьи, рецепты, образцы кода, полезные ссылки и конспекты по Golang.</p></div><div class="col-sm-4 offset-md-1 py-4"><h4 class="text-white">Контакты</h4><ul class="list-unstyled"><li><a href="mailto:gocmto@gmail.com" class="text-white">gocmto@gmail.com</a></li></ul></div></div></div></div><div class="navbar navbar-dark bg-dark shadow-sm"><div class="container d-flex justify-content-between"><a href="/" class="navbar-brand d-flex align-items-center"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" aria-hidden="true" class="mr-2" viewBox="0 0 24 24" focusable="false"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><strong>Golang</strong></a><button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarHeader" aria-controls="navbarHeader" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button></div></div></header>
+
+<main role="main">
+    <div class="container">
+        <h1>Параллельная выборка URL в Go</h1>
+        <p class="lead text-muted">
+            Одним из наиболее интересных и новых аспектов Go является <strong>поддержка параллельного программирования</strong>.
+            Это очень большая тема, которую мы рассмотрим несколько позднее,
+            а сейчас мы просто попробуем на вкус основные механизмы параллельности Go — go-подпрограммы (<code>горутины</code>) и каналы.
+        </p>
+        <p class="lead text-muted">
+            Наша новая программа называется <code>fetchall</code>, и она точно так же выполняет выборку содержимого URL,
+            как и приложение <code>fetch</code>, но делает это по многим URL <strong>одновременно</strong>,
+            так что этот процесс займет не больше времени, чем самая долгая выборка, <u>а не время, составляющее сумму всех времен отдельных выборок</u>.
+            Пока что <code>fetchall</code> игнорирует ответы серверов, но сообщает об их размерах и затраченном на их получение времени:
+        </p>
+        <p class="lead text-muted">
+            <pre>// Выполняет параллельную выборку URL и сообщает
+// о затраченном времени и размере ответа для каждого из них
+package main
+
+import (
+	"fmt"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"time"
+)
+
+func main() {
+	start := time.Now()
+	ch := make(chan string)
+	for _, url := range os.Args[1:] {
+		go fetch(url, ch) // start a goroutine
+	}
+	for range os.Args[1:] {
+		fmt.Println(<-ch) // receive from channel ch
+	}
+	fmt.Printf("%.2fs elapsed\n", time.Since(start).Seconds())
+}
+
+func fetch(url string, ch chan<- string) {
+	start := time.Now()
+	resp, err := http.Get(url)
+	if err != nil {
+		ch <- fmt.Sprint(err) // send to channel ch
+		return
+	}
+
+	nbytes, err := io.Copy(ioutil.Discard, resp.Body)
+	resp.Body.Close() // don't leak resources
+	if err != nil {
+		ch <- fmt.Sprintf("while reading %s: %v", url, err)
+		return
+	}
+	secs := time.Since(start).Seconds()
+	ch <- fmt.Sprintf("%.2fs  %7d  %s", secs, nbytes, url)
+}</pre>
+        </p>
+        <p class="lead text-muted">
+            Вот пример работы программы: <br>
+            <pre>$ go build fetchall
+$ ./fetchall https://golang.org http://gopl.io https://godoc.org
+0.14s 6852 https://godoc.org
+0.16s 7261 https://golang.org
+0.48s 2475 http://gopl.io
+0.48s elapsed</pre>
+        </p>
+        <p class="lead text-muted">
+            go-подпрограмма представляет собой <strong>параллельное выполнение функции</strong> и имеет иное,
+            более запоминающееся, название - <code>горутин</code>.
+            Канал является <strong>механизмом связи</strong>, который позволяет одной go-подпрограмме(горутину)
+            передавать значения определенного типа другой go-подпрограмме(горутину).
+            Функция <u>main выполняется в горутине</u>, а <strong>инструкция <code>go</code></strong> создает дополнительные go-подпрограммы.
+        </p>
+        <h4>Как это работает</h4>
+        <p class="lead text-muted">
+            Функция main <strong>создает канал строк</strong> с помощью make.
+            <u>Для каждого аргумента командной строки</u>
+            инструкция go в первом цикле по диапазону <em>запускает новую go-подпрограмму</em>,
+            которую <code>fetch</code> <strong>вызывает асинхронно</strong> для выборки URL с помощью http.Get.
+            Функция io.Copy считывает тело ответа и игнорирует его, записывая в выходной поток ioutil.Discard.
+            Сору возвращает количество байтов и информацию о происшедших ошибках.
+            <u>При получении каждого результата <code>fetch</code> отправляет итоговую строку в канал <code>ch</code></u>.
+            <strong>Второй цикл по диапазону</strong> в функции main получает и выводит эти строки.
+        </p>
+        <p></p>
+        <p>
+            <div class="alert alert-info" role="alert">
+                <h5>Пример</h5>
+                Отправка значения в канал: <strong>ch <- expression</strong>
+            </div>
+        </p>
+        <p class="lead text-muted">
+            Когда одна go-подпрограмма пытается отправить или получить информацию по каналу,
+            <strong>она блокируется</strong>, пока другая go-подпрограмма
+            пытается выполнить соответствующие операции получения или отправки,
+            и после передачи информации обе go-подпрограммы продолжают работу.
+            В данном примере каждая функция fetch отправляет значение (ch <- expression) в канал ch, и main получает их все (<- ch).
+            То, что весь вывод осуществляется функцией main, гарантирует,
+            что вывод каждой go-подпрограммы(горутина) будет <strong>обработан как единое целое</strong>,
+            без опасности получить на экране чередование вывода при завершении
+            двух go-подпрограмм(горутин) в один и тот же момент времени.
+        </p>
+        <p>
+        <div class="alert alert-warning" role="alert">
+            <h5>Пример</h5>
+            Получить все значения из канала: <strong><- ch</strong>
+        </div>
+        </p>
+    </div>
+</main>
+
+<footer class="text-muted"><div class="container"><hr><p>&copy; 2020 | <a href="/">Go Seeker</a> | Ищущий Go | <a href="/list.html">Все материалы</a></p></div></footer>
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" crossorigin="anonymous"></script><script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
+<script src="/src/js/theme.js"></script>
+</body></html>
