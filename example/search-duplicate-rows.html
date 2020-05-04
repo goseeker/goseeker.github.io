@@ -1,6 +1,6 @@
 <!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><meta name="author" content="goseeker"><meta property="og:image" content="/src/img/ogimg-goseeker.png"><link rel="icon" href="/favicon.ico" type="image/x-icon"><link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" crossorigin="anonymous"><link rel="stylesheet" href="/src/css/theme.css">
     <title>Поиск повторяющихся строк</title>
-    <meta name="description" content="+++DESCRIPTION+++">
+    <meta name="description" content="Давайте проработем три варианта программы под названием dup, некоего аналога uniq из Unix, которая ищет соседние повторяющиеся строки">
     <meta name="keywords" content="поиск, повторяющиеся, строки, golang, go, seeker, website">
 </head><body>
 <header><div class="collapse bg-dark" id="navbarHeader"><div class="container"><div class="row"><div class="col-sm-8 col-md-7 py-4"><h4 class="text-white">О сайте</h4><p class="text-muted">Увлеченный разработчик или новичок ищущий решения и материалы по языку программирования Go - этот сайт для тебя. Здесь ты найдешь статьи, рецепты, образцы кода, полезные ссылки и конспекты по Golang.</p></div><div class="col-sm-4 offset-md-1 py-4"><h4 class="text-white">Контакты</h4><ul class="list-unstyled"><li><a href="mailto:gocmto@gmail.com" class="text-white">gocmto@gmail.com</a></li></ul></div></div></div></div><div class="navbar navbar-dark bg-dark shadow-sm"><div class="container d-flex justify-content-between"><a href="/" class="navbar-brand d-flex align-items-center"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" aria-hidden="true" class="mr-2" viewBox="0 0 24 24" focusable="false"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><strong>Golang</strong></a><button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarHeader" aria-controls="navbarHeader" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button></div></div></header>
@@ -181,12 +181,66 @@ func countLines(f *os.File, counts map[string]int) {
             В нашем примере значения, <u>вставляемые в отображение counts функцией countLines, видны функции main</u>.
         </p>
         <h3>Вариант 3</h3>
-        <p class="lead text-muted">+++</p>
-        <p class="lead text-muted">+++</p>
-        <p class="lead text-muted">+++</p>
-        <p class="lead text-muted">+++</p>
-        <p class="lead text-muted">+++</p>
-        <p class="lead text-muted">+++</p>
+        <p class="lead text-muted">
+            Рассмотренные выше варианты приложения "dup" работают в "потоковом" режиме,
+            в котором входные данные считываются и <u>разбиваются на строки по необходимости</u>,
+            так что в принципе эти программы могут обрабатывать произвольное количество входных данных.
+            Альтернативный подход состоит в чтении всех входных данных в память <strong>одним большим "глотком"</strong>,
+            полном разделении его на строки, и последующей обработке строк.
+            3-й вариант нашей программы работает именно таким образом.
+        </p>
+        <p class="lead text-muted">
+            В ней вводятся функция <code>ReadFile</code> (из пакета <code>io/ioutil</code>),
+            которая <strong>считывает все содержимое именованного файла</strong>, и функция <code>strings.Split</code>,
+            которая разбивает строку на срез подстрок.
+        </p>
+        <p class="lead text-muted">
+            Как вы уже поняли, этот вариант программы несколько упрощен.
+            Во-первых, этот вариант программы <strong>читает только именованные файлы</strong>,
+            но не стандартный ввод, так как функции <code>ReadFile</code> требуется аргумент, который представляет собой <u>имя файла</u>.
+            Во-вторых, мы перенесли подсчет строк обратно в функцию <code>main</code>, так как теперь он необходим только в одном месте.
+        </p>
+        <p class="lead text-muted">
+            <pre>package main
+import (
+	"fmt"
+	"io/ioutil"
+	"os"
+	"strings"
+)
+func main() {
+	counts := make(map[string]int)
+	for _, filename := range os.Args[1:] {
+		data, err := ioutil.ReadFile(filename)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "dup3: %v\n", err)
+			continue
+		}
+		for _, line := range strings.Split(string(data), "\n") {
+			counts[line]++
+		}
+	}
+	for line, n := range counts {
+		if n > 1 {
+			fmt.Printf("%d\t%s\n", n, line)
+		}
+	}
+}</pre>
+        </p>
+        <p class="lead text-muted">
+            Функция <code>ReadFile</code> возвращает <strong>байтовый срез</strong>,
+            который должен быть преобразован в <code>string</code> так, чтобы его можно было разбить с помощью функции <code>strings.Split</code>.
+        </p>
+        <p class="lead text-muted">
+            Внутри функции bufio.Scanner, ioutil.ReadFile и ioutil.WriteFile
+            используют методы Read и Write объекта *os. File,
+            но большинству программистов очень редко приходится прибегать к таким низкоуровневым функциям непосредственно.
+            Проще использовать функции более высокого уровня наподобие функций из пакетов:
+        </p>
+        <ul>
+            <li>bufio</li>
+            <li>io/ioutil</li>
+        </ul>
     </div>
 </main>
 
