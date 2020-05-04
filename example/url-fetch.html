@@ -1,0 +1,77 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><meta name="author" content="goseeker"><meta property="og:image" content="/src/img/ogimg-goseeker.png"><link rel="icon" href="/favicon.ico" type="image/x-icon"><link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" crossorigin="anonymous"><link rel="stylesheet" href="/src/css/theme.css">
+    <title>Выборка URL</title>
+    <meta name="description" content="Для иллюстрации минимально необходимого кода для получения информации по протоколу HTTP ниже приведена простая программа fetch, которая осуществляет выборку содержимого по каждому из указанных URL и выводит его как не интерпретированный текст; эта программа создана по мотивам неоценимо полезной утилиты curl.">
+    <meta name="keywords" content="выборка, url, урл, golang, go, seeker, website">
+</head><body>
+<header><div class="collapse bg-dark" id="navbarHeader"><div class="container"><div class="row"><div class="col-sm-8 col-md-7 py-4"><h4 class="text-white">О сайте</h4><p class="text-muted">Увлеченный разработчик или новичок ищущий решения и материалы по языку программирования Go - этот сайт для тебя. Здесь ты найдешь статьи, рецепты, образцы кода, полезные ссылки и конспекты по Golang.</p></div><div class="col-sm-4 offset-md-1 py-4"><h4 class="text-white">Контакты</h4><ul class="list-unstyled"><li><a href="mailto:gocmto@gmail.com" class="text-white">gocmto@gmail.com</a></li></ul></div></div></div></div><div class="navbar navbar-dark bg-dark shadow-sm"><div class="container d-flex justify-content-between"><a href="/" class="navbar-brand d-flex align-items-center"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" aria-hidden="true" class="mr-2" viewBox="0 0 24 24" focusable="false"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><strong>Golang</strong></a><button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarHeader" aria-controls="navbarHeader" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button></div></div></header>
+
+<main role="main">
+    <div class="container">
+        <h1>Выборка URL в Go</h1>
+        <p class="lead text-muted">
+            Для множества приложений доступ к информации в Интернете не менее важен, чем доступ к локальной файловой системе.
+            Go предоставляет <strong>коллекцию пакетов</strong>, сгруппированную в каталоге <code>net</code>,
+            которая облегчает отправку и получение информации из Интернета,
+            создание низкоуровневых соединений и настройку серверов, для чего в особенности полезны <strong>возможности параллелизации Go</strong>.
+        </p>
+        <p class="lead text-muted">
+            Для иллюстрации минимально необходимого кода для получения информации по протоколу HTTP
+            ниже приведена простая программа <code>fetch</code>,
+            которая <strong>осуществляет выборку содержимого</strong> по каждому из указанных URL
+            и <u>выводит его как не интерпретированный текст</u>; эта программа создана по мотивам неоценимо полезной утилиты <code>curl</code>.
+        </p>
+        <p class="lead text-muted">
+            <pre>// Выводит ответ на запрос по заданному URL
+package main
+import (
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"os"
+)
+func main() {
+	for _, url := range os.Args[1:] {
+		resp, err := http.Get(url)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "fetch: %v\n", err)
+			os.Exit(1)
+		}
+		b, err := ioutil.ReadAll(resp.Body)
+		resp.Body.Close()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "fetch: reading %s: %v\n", url, err)
+			os.Exit(1)
+		}
+		fmt.Printf("%s", b)
+	}
+}</pre>
+        </p>
+        <p class="lead text-muted">
+            В этой программе вводятся функции из двух пакетов:
+            - net/http и <br>
+            - io/ioutil.<br>
+            Функция <code>http.Get</code> выполняет HTTP-запрос и при отсутствии ошибок возвращает результат <u>в структуре <code>resр</code></u>.
+            Поле Body этой структуры содержит <strong>ответ сервера в виде потока</strong>, доступного для чтения.
+            Затем <code>ioutil.ReadAll</code> считывает весь ответ; результат сохраняется в переменной b.
+            <strong>Поток Body закрывается</strong> для предотвращения утечки ресурсов, и функция Printf записывает ответ в стандартный вывод.
+        </p>
+        <p class="lead text-muted">
+            <pre>$ go build fetch
+$ ./fetch http://gopl.io
+<title>The Go Programming Language</title></pre>
+        </p>
+        <p class="lead text-muted">
+            В случае ошибки HTTP-запроса fetch сообщает о том, что произошло:
+        </p>
+        <p class="lead text-muted">
+            <pre>$ ./fetch http://bad.gopl.io
+fetch: Get http://bad.gopl.io: dial tcp: lookup bad.gopl.io: no such host</pre>
+        </p>
+        <p class="lead text-muted">В случае любой ошибки <code>os.Exit(1)</code> <strong>завершает работу процесса</strong> с кодом состояния 1.</p>
+    </div>
+</main>
+
+<footer class="text-muted"><div class="container"><hr><p>&copy; 2020 | <a href="/">Go Seeker</a> | Ищущий Go | <a href="/list.html">Все материалы</a></p></div></footer>
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" crossorigin="anonymous"></script><script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
+<script src="/src/js/theme.js"></script>
+</body></html>
