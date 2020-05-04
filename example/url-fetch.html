@@ -23,12 +23,14 @@
         <p class="lead text-muted">
             <pre>// Выводит ответ на запрос по заданному URL
 package main
+
 import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
 )
+
 func main() {
 	for _, url := range os.Args[1:] {
 		resp, err := http.Get(url)

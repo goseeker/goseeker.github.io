@@ -29,11 +29,13 @@
 // в стандартном вводе более одного раза,
 // а также количество ее появлений
 package main
+
 import (
 	"bufio"
 	"fmt"
 	"os"
 )
+
 func main() {
 	counts := make(map[string]int)
 	input := bufio.NewScanner(os.Stdin)
@@ -119,11 +121,13 @@ func main() {
 // во входных данных более одного раза.
 // Программа читает стандартный ввод или список именованных файлов
 package main
+
 import (
 	"bufio"
 	"fmt"
 	"os"
 )
+
 func main() {
 	counts := make(map[string]int)
 	files := os.Args[1:]
@@ -146,6 +150,7 @@ func main() {
 		}
 	}
 }
+
 func countLines(f *os.File, counts map[string]int) {
 	input := bufio.NewScanner(f)
 	for input.Scan() {
@@ -202,12 +207,14 @@ func countLines(f *os.File, counts map[string]int) {
         </p>
         <p class="lead text-muted">
             <pre>package main
+
 import (
 	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
 )
+
 func main() {
 	counts := make(map[string]int)
 	for _, filename := range os.Args[1:] {
