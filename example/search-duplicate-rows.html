@@ -1,0 +1,122 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><meta name="author" content="goseeker"><meta property="og:image" content="/src/img/ogimg-goseeker.png"><link rel="icon" href="/favicon.ico" type="image/x-icon"><link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" crossorigin="anonymous"><link rel="stylesheet" href="/src/css/theme.css">
+    <title>Поиск повторяющихся строк</title>
+    <meta name="description" content="+++DESCRIPTION+++">
+    <meta name="keywords" content="поиск, повторяющиеся, строки, golang, go, seeker, website">
+</head><body>
+<header><div class="collapse bg-dark" id="navbarHeader"><div class="container"><div class="row"><div class="col-sm-8 col-md-7 py-4"><h4 class="text-white">О сайте</h4><p class="text-muted">Увлеченный разработчик или новичок ищущий решения и материалы по языку программирования Go - этот сайт для тебя. Здесь ты найдешь статьи, рецепты, образцы кода, полезные ссылки и конспекты по Golang.</p></div><div class="col-sm-4 offset-md-1 py-4"><h4 class="text-white">Контакты</h4><ul class="list-unstyled"><li><a href="mailto:gocmto@gmail.com" class="text-white">gocmto@gmail.com</a></li></ul></div></div></div></div><div class="navbar navbar-dark bg-dark shadow-sm"><div class="container d-flex justify-content-between"><a href="/" class="navbar-brand d-flex align-items-center"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" aria-hidden="true" class="mr-2" viewBox="0 0 24 24" focusable="false"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><strong>Golang</strong></a><button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarHeader" aria-controls="navbarHeader" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button></div></div></header>
+
+<main role="main">
+    <div class="container">
+        <h1>Поиск повторяющихся строк  с помощью Go</h1>
+        <p class="lead text-muted">
+            Программы для копирования файлов, печати, поиска, сортировки, подсчета и другие имеют схожую структуру:
+            <strong>цикл по входным данным</strong>, некоторые вычисления над каждым элементом и <u>генерация вывода "на лету"</u> или по окончании вычислений.
+            Давайте проработем три варианта программы под названием "dup", некоего аналога <code>uniq</code> из Unix,
+            которая ищет соседние <strong>повторяющиеся строки</strong>.
+        </p>
+        <h3>Вариант 1</h3>
+        <p class="lead text-muted">
+            Здесь "dup" выводит каждую строку, которая в стандартном вводе появляется <strong>больше одного раза</strong>, выводя предварительно количество ее появлений.
+            В этой программе вводятся:
+        </p>
+        <ol>
+            <li>инструкция <code>if</code></li>
+            <li>тип данных <code>map</code></li>
+            <li>пакет <code>bufio</code></li>
+        </ol>
+        <p class="lead text-muted">
+            <pre>// Выводит текст каждой строки, которая появляется
+// в стандартном вводе более одного раза,
+// а также количество ее появлений
+package main
+import (
+	"bufio"
+	"fmt"
+	"os"
+)
+func main() {
+	counts := make(map[string]int)
+	input := bufio.NewScanner(os.Stdin)
+	for input.Scan() {
+		counts[input.Text()]++
+	}
+	// Примечание: игнорируем потенциальные ошибки из input.Err()
+	for line, n := range counts {
+		if n > 1 {
+			fmt.Printf("%d\t%s\n", n, line)
+		}
+	}
+}</pre>
+        </p>
+        <p class="lead text-muted">
+            Отображение <code>map</code> содержит набор пар "ключ-значение"
+            и обеспечивает константное время выполнения операций хранения, извлечения или проверки наличия элемента в множестве.
+            Если провести аналогию с языком программирования php, то <code>map</code> в Golang - это ассоциативный массив из php.
+            Но в Go и ключи, и значения <code>map</code> должнв быть одного и того же типа.
+            Ключ может быть любого типа, лишь бы значения этого типа можно было сравнить с помощью оператора ==; распространенным примером ключа являются строки.
+            Значение может быть любого типа. В нашем примере ключи представляют собой строки, а значения представлены типом <code>int</code>.
+            Встроенная функция <code>make</code> создает <strong>новое пустое отображение</strong>, хотя она имеет и другие применения.
+        </p>
+        <p class="lead text-muted">
+            Всякий раз, когда "dup" считывает строку ввода, эта строка используется как ключ в отображении, и соответствующее значение увеличивается.
+            Инструкция <code>counts[input.Text()]++</code> эквивалентна следующим двум инструкциям: <br>
+            - line := input.Text()<br>
+            - counts[line] = counts[line] + 1
+        </p>
+        <p class="lead text-muted">
+            Если в отображении еще нет нужного нам ключа, это не проблема.
+            Когда новая строка встречается впервые, выражение <code>counts[line]</code> в правой части
+            присваивает нулевое значение новому элементу, которое для типа int равно 0.
+        </p>
+        <p class="lead text-muted">
+            Для вывода результатов мы вновь <strong>используем цикл по диапазону</strong>, на этот раз — по отображению counts.
+            Как и ранее, каждая итерация дает две величины
+            - ключ и <br>
+            - значение элемента отображения для этого ключа.<br>
+            Порядок обхода отображения не определен, на практике этот порядок случаен и <u>варьируется от одного выполнения программы к другому</u>.
+            Это сделано преднамеренно, поскольку предотвращает написание программ, опирающихся на конкретное упорядочение, которое не гарантируется.
+        </p>
+        <p class="lead text-muted">
+            Далее наступает очередь пакета <code>bufio</code>, который помогает сделать ввод и вывод эффективным и удобным.
+            Одной из наиболее полезных его возможностей является <strong>тип с именем Scanner</strong>,
+            который <u>считывает входные данные и разбивает их на строки или слова</u>;
+            это самый простой способ обработки ввода, который поступает построчно.
+        </p>
+        <p class="lead text-muted">
+            Программа использует краткое объявление переменной для создания новой переменной <code>input</code>,
+            которая ссылается на <code>bufio.Scanner</code>:
+            <strong><code>input := bufio.NewScanner(os.Stdin)</code></strong>
+        </p>
+        <p class="lead text-muted">
+            Сканер считывает стандартный ввод программы.
+            Каждый вызов <code>input.Scan()</code> считывает очередную строку и удаляет завершающий символ новой строки;
+            результат можно получить путем вызова <code>input.Text()</code>.
+            Функция Scan возвращает значение true, если строка считана и доступна,
+            и значение false, если входные данные исчерпаны.
+        </p>
+        <p class="lead text-muted">
+            Функция <code>fmt.Printf</code> выполняет <strong>форматированный вывод</strong> на основе списка выражений.
+            Первым ее аргументом является строка формата, которая указывает, как должны быть <code>отформатированы последующие аргументы</code>.
+            Формат каждого аргумента определяется символом преобразования, буквой, следующей за знаком процента.
+        </p>
+        <p class="lead text-muted">
+            Строка формата содержит также символы табуляции <code>\t</code> и новой строки <code>\n</code>.
+            Строковые литералы могут содержать такие управляющие последовательности для представления символов,
+            которые обычно невидимы на экране и не могут быть введены непосредственно.
+            <u>По умолчанию Printf не записывает символ новой строки</u>.
+            По соглашению функции форматирования, имена которых <strong>заканчиваются на f</strong>,
+            такие как <code>log.Printf</code> и <code>fmt.Errorf</code>, используют правила форматирования <code>fmt.Printf</code>,
+            тогда как функции, имена которых заканчиваются на <code>ln</code>, как Println,
+            форматируют свои аргументы так, как будто используется символ преобразования <code>%v</code>, а за ним — символ новой строки.
+        </p>
+        <p class="lead text-muted">+++</p>
+        <p class="lead text-muted">+++</p>
+        <p class="lead text-muted">+++</p>
+        <p class="lead text-muted">+++</p>
+    </div>
+</main>
+
+<footer class="text-muted"><div class="container"><hr><p>&copy; 2020 | <a href="/">Go Seeker</a> | Ищущий Go | <a href="/list.html">Все материалы</a></p></div></footer>
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" crossorigin="anonymous"></script><script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
+<script src="/src/js/theme.js"></script>
+</body></html>
