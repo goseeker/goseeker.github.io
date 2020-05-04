@@ -1,0 +1,39 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><meta name="author" content="goseeker"><meta property="og:image" content="/src/img/ogimg-goseeker.png"><link rel="icon" href="/favicon.ico" type="image/x-icon"><link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" crossorigin="anonymous"><link rel="stylesheet" href="/src/css/theme.css">
+    <title>Hello world на Golang</title>
+    <meta name="description" content="Традиционно начнем изучение нового языка Go с программы &quot;hello, world&quot;. Поскольку язык С — один из основных прямых предков Go, у нас есть исторические основания для того, чтобы начать именно с данной программы.">
+    <meta name="keywords" content="hello, world, приложение, golang, go, seeker, website">
+</head><body>
+<header><div class="collapse bg-dark" id="navbarHeader"><div class="container"><div class="row"><div class="col-sm-8 col-md-7 py-4"><h4 class="text-white">О сайте</h4><p class="text-muted">Увлеченный разработчик или новичок ищущий решения и материалы по языку программирования Go - этот сайт для тебя. Здесь ты найдешь статьи, рецепты, образцы кода, полезные ссылки и конспекты по Golang.</p></div><div class="col-sm-4 offset-md-1 py-4"><h4 class="text-white">Контакты</h4><ul class="list-unstyled"><li><a href="mailto:gocmto@gmail.com" class="text-white">gocmto@gmail.com</a></li></ul></div></div></div></div><div class="navbar navbar-dark bg-dark shadow-sm"><div class="container d-flex justify-content-between"><a href="#" class="navbar-brand d-flex align-items-center"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" aria-hidden="true" class="mr-2" viewBox="0 0 24 24" focusable="false"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><strong>Golang</strong></a><button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarHeader" aria-controls="navbarHeader" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button></div></div></header>
+
+<main role="main">
+    <div class="container">
+        <h1>Hello world на Go</h1>
+        <p class="lead text-muted">
+            Традиционно начнем изучение нового языка Go с программы &quot;hello, world&quot;.
+            Ввиду того, что язык С — один из основных прямых предков Go, у нас есть масса исторических оснований для того, чтобы начать именно с данной программы.
+        </p>
+        <p class="lead text-muted">
+            Go — компилируемый язык. Его инструментарий преобразует исходный код программы, а также библиотеки, от которых он зависит, в команды на машинном языке компьютера.
+            Доступ "под капот" Go осуществляется с помощью единой команды <code>go</code>, которая имеет множество подкоманд.
+            Самой простой из них является подкоманда <code>run</code>, компилирующая исходный код из одного или нескольких файлов с расширением <code>.go</code>,
+            связывает их с библиотеками, а затем выполняет полученный в результате выполнимый файл.
+        </p>
+        <p class="lead text-muted"><strong><code>go run helloworld.go</code></strong></p>
+        <p class="lead text-muted">
+            Если программа предназначена для использования более чем один раз или в качестве эксперимента,
+            вероятно, есть смысл скомпилировать ее и сохранить скомпилированный результат для дальнейшего использования.
+            Это делается с помощью команды <code>build</code>:
+        </p>
+        <p class="lead text-muted"><strong><code>go build helloworld.go</code></strong></p>
+        <p class="lead text-muted">
+            Она создает бинарный выполнимый файл helloworld в Linux или helloworld.exe в Windows, который можно выполнить в любой момент времени без какой-либо обработки:
+        </p>
+        <p class="lead text-muted">+++</p>
+        <p class="lead text-muted">+++</p>
+    </div>
+</main>
+
+<footer class="text-muted"><div class="container"><hr><p>&copy; 2020 | <a href="/">Go Seeker</a> | Ищущий Go</p></div></footer>
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" crossorigin="anonymous"></script><script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
+<script src="/src/js/theme.js"></script>
+</body></html>
