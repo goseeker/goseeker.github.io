@@ -1,0 +1,172 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><meta name="author" content="goseeker"><meta property="og:image" content="/src/img/ogimg-goseeker.png"><link rel="icon" href="/favicon.ico" type="image/x-icon"><link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" crossorigin="anonymous"><link rel="stylesheet" href="/src/css/theme.css">
+    <title>Функции производительности в Go</title>
+    <meta name="description" content="Эталонное тестирования представляет собой практику измерения производительности программы для фиксированной рабочей нагрузки. В Go функция производительности выглядит как тестовая функция, но с префиксом Benchmark и параметром *testing.B, который предоставляет большую часть тех же методов, что и *testing.T, плюс несколько дополнительных, связанных с измерением производительности.">
+    <meta name="keywords" content="эталонное, тестирование, функции, производительности, benchmark, golang, go, seeker, website">
+</head><body>
+<header><div class="collapse bg-dark" id="navbarHeader"><div class="container"><div class="row"><div class="col-sm-8 col-md-7 py-4"><h4 class="text-white">О сайте</h4><p class="text-muted">Увлеченный разработчик или новичок ищущий решения и материалы по языку программирования Go - этот сайт для тебя. Здесь ты найдешь статьи, рецепты, образцы кода, полезные ссылки и конспекты по Golang.</p></div><div class="col-sm-4 offset-md-1 py-4"><h4 class="text-white">Контакты</h4><ul class="list-unstyled"><li><a href="mailto:gocmto@gmail.com" class="text-white">gocmto@gmail.com</a></li></ul></div></div></div></div><div class="navbar navbar-dark bg-dark shadow-sm"><div class="container d-flex justify-content-between"><a href="/" class="navbar-brand d-flex align-items-center"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" aria-hidden="true" class="mr-2" viewBox="0 0 24 24" focusable="false"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><strong>Golang</strong></a><button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarHeader" aria-controls="navbarHeader" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button></div></div></header>
+
+<main role="main">
+    <div class="container">
+        <h1>Функции производительности в Go</h1>
+        <p class="lead text-muted">
+            <strong>Эталонное тестирование</strong> представляет собой практику
+            <u>измерения производительности программы для фиксированной рабочей нагрузки</u>.
+            В Go функция производительности выглядит как тестовая функция, но с префиксом <code>Benchmark</code> и параметром <code>*testing.B</code>,
+            который предоставляет большую часть тех же методов, что и <code>*testing.T</code>,
+            плюс несколько дополнительных, связанных с измерением производительности.
+            Он также предоставляет <strong>целочисленное поле <code>N</code></strong>, которое указывает количество раз измеряемой операции.
+        </p>
+        <p class="lead text-muted">
+            Вот как выглядит функция тестирования для <strong>IsPalindrome</strong>, вызывающая эту функцию в цикле N раз:<br>
+            <pre>import "testing"
+func BenchmarkIsPalindrome(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		IsPalindrome("A man, a plan, a canal: Panama")
+	}
+}</pre>
+        </p>
+        <p class="lead text-muted">
+            В отличие от тестов, функции производительности по умолчанию не запускаются.
+            Поэтому запуск эталонного тестирования в Go
+            выполняется с помощью команды <code>go test</code> и флага <code>-bench</code>.
+            Аргумент флага - <code>bench</code> выбирает, какие функции производительности будут запущены.
+            Это <u>регулярное выражение</u>, соответствующее именам функций <strong>Benchmark</strong>,
+            со значением по умолчанию, которое не соответствует ни одной из них.
+            Шаблон приводит к соответствию всем функциям в пакете word,
+            но так как есть только одна функция, эквивалентная запись имеет вид <code>-bench=IsPalindrome</code>:
+        </p>
+        <p class="lead text-muted">
+            <pre>$ cd some/path/dir
+$ go test -bench=.
+PASS
+BenchmarkIsPalindrome-8 1000000 1035 ns/op
+ok word2 2.179s</pre>
+        </p>
+        <p class="lead text-muted">
+            Числовой суффикс имени функции производительности (здесь — 8) указывает значение <strong>GOMAXPROCS</strong>,
+            которое является важным для параллельных тестов производительности.
+        </p>
+        <p class="lead text-muted">
+            Отчет говорит, что каждый вызов IsPalindrome занимает
+            около <code>1.035 микросекунды</code> при усреднении по <code>1 ООО ООО запусков</code>.
+            Поскольку изначально функции производительности <strong>не представляют</strong>, сколько времени выполняется операция,
+            она делает первоначальные измерения для небольшого значения N,
+            а затем <u>экстраполирует их для получения значения</u>,
+            достаточно большого для выполнения устойчивого измерения времени.
+        </p>
+        <p class="lead text-muted">
+            Причина, по которой цикл реализуется функцией производительности, а не вызывающим кодом в драйвере теста,
+            заключается в том, что <strong>функция производительности</strong> имеет возможность выполнения
+            любого необходимого одноразового кода настройки вне цикла, без добавления его к измеряемому времени на каждой итерации.
+            Если этот код настройки нарушает результаты тестирования, параметр <code>testing.В</code>
+            предоставляет методы для остановки, возобновления и сброса таймера, но они требуются очень редко.
+        </p>
+        <p class="lead text-muted">
+            Теперь, когда у нас есть <strong>результаты эталонных тестов</strong> и тестов,
+            легко попробовать идеи для того, чтобы <u>сделать программу быстрее</u>.
+            Возможно, наиболее очевидная оптимизация — <em>останавливать второй цикл IsPalindrome посредине</em>, чтобы избежать повторных сравнений:
+        </p>
+        <p class="lead text-muted">
+            <pre>n := len(letters)/2
+for i := 0; i < n; i++ {
+	if letters[i] != letters[len(letters)-l-i] {
+		return false
+	}
+}
+return true</pre>
+        </p>
+        <p class="lead text-muted">
+            Но как это часто бывает, очевидная оптимизация не всегда дает ожидаемые выгоды. Данная оптимизация дала лишь 4% улучшения в одном эксперименте:
+        </p>
+        <p class="lead text-muted">
+            <pre>$ go test -bench=.
+PASS
+BenchmarkIsPalindrome-8 1000000 992 ns/op
+ok word2 2.093s</pre>
+        </p>
+        <p class="lead text-muted">
+            Другая идея заключается в том, чтобы предварительно выделить достаточно большой массив для letters,
+            вместо того чтобы расширять его последовательными вызовами append.
+            Объявление letters как массива подходящего размера, как здесь:
+        </p>
+        <p class="lead text-muted">
+            <pre>letters := make([]rune, 0, len(s))
+for r := range s {
+	if Unicode.IsLetter(r) {
+		letters = append(letters, Unicode.ToLower(r))
+	}
+}</pre>
+        </p>
+        <p class="lead text-muted">
+            дает улучшение почти на 35%, и теперь показатели производительности усредняются по 2 ООО ООО итераций:
+        </p>
+        <p class="lead text-muted">
+            <pre>$ go test -bench=.
+PASS
+BenchmarkIsPalindrome-8 2000000 697 ns/op
+ok gopl.io/chll/word2 1.468s</pre>
+        </p>
+        <p class="lead text-muted">
+            Как показывает данный пример, наиболее быстрой программой часто оказывается та,
+            которая делает <strong>наименьшее количество выделений памяти</strong>.
+            Флаг командной строки <code>-benchmem</code> включает в отчет статистику распределений памяти.
+            Давайте сравним количество выделений до оптимизации:
+        </p>
+        <p class="lead text-muted">
+            <pre>$ go test -bench=. -benchmem
+PASS
+BenchmarklsPalindrome 1000000 1026 ns/op 304 B/op 4 allocs/op</pre>
+        </p>
+        <p class="lead text-muted">и после нее:</p>
+        <p class="lead text-muted">
+            <pre>$ go test -bench=. -benchmem
+PASS
+BenchmarklsPalindrome 2000000 807 ns/op 128 B/op 1 allocs/op</pre>
+        </p>
+        <p class="lead text-muted">
+            Сборка всех распределений памяти в <strong>один вызов make</strong> ликвидировала 75% распределений и вдвое уменьшила количество расходуемой памяти.
+        </p>
+        <p class="lead text-muted">
+            Функции производительности говорят нам об <strong>абсолютном времени</strong>, затрачиваемом на некоторую операцию,
+            но во многих случаях нас интересует относительное время выполнения двух различных операций.
+            Например, если функция тратит 1 мс для обработки 1000 элементов, то сколько времени займет обработка 10 ООО или миллиона?
+            Такие сравнения показывают <strong>асимптотический рост</strong> времени работы функции.
+            Другой пример: <u>каков наилучший размер буфера ввода-вывода?</u>
+            Измерение производительности для разных размеров может помочь нам выбрать наименьший буфер,
+            который обеспечивает удовлетворительные результаты.
+            Третий пример: <strong>какой алгоритм</strong> наилучшим образом подходит для выполнения данной работы?
+            Изучение двух различных алгоритмов для одних и тех же входных данных зачастую
+            может показать сильные и слабые стороны каждого из них при важных или представительных входных данных.
+        </p>
+        <p class="lead text-muted">
+            Сравнительные показатели достигаются с помощью обычного кода.
+            Они обычно принимают вид одной параметризованной функции, вызываемой из <strong>нескольких функций Benchmark</strong> с различными значениями, например:
+        </p>
+        <ul>
+            <li>func benchmark(b *testing.B, size int) { /* ... */ }</li>
+            <li>func Benchmarkl0(b *testing.B) { benchmark(b, 10) }</li>
+            <li>func Benchmarkl00(b *testing.B) { benchmark(b, 100) }</li>
+            <li>func Benchmarkl000(b *testing.B) { benchmark(b, 1000) }</li>
+        </ul>
+        <p class="lead text-muted">
+            Параметр size, который определяет размер входных данных, варьируется для разных функций,
+            но является константой в пределах каждой функции производительности.
+            Постарайтесь <strong>противостоять искушению</strong> использовать параметр <code>b.N</code> как размер входных данных.
+            Если только вы не интерпретируете его как количество итераций для входных данных фиксированного размера,
+            результаты вашего исследования окажутся бессмысленными.
+        </p>
+        <p class="lead text-muted">
+            Шаблоны, выявляемые при сравнении результатов функций производительности, особенно полезны во время разработки программы,
+            но их не следует игнорировать и при рабочей программе.
+            По мере развития программы могут расти ее входные данные,
+            она может устанавливаться на новых операционных системах
+            или процессорах с различными характеристиками,
+            и мы можем повторно использовать эти данные <strong>для пересмотра проектных решений</strong>
+        </p>
+    </div>
+</main>
+
+<footer class="text-muted"><div class="container"><hr><p>&copy; 2020 | <a href="/">Go Seeker</a> | Ищущий Go | <a href="/list.html">Все материалы</a></p></div></footer>
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" crossorigin="anonymous"></script><script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
+<script src="/src/js/theme.js"></script>
+</body></html>
