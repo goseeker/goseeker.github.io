@@ -1,0 +1,39 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><meta name="author" content="goseeker"><meta property="og:image" content="/src/img/ogimg-goseeker.png"><link rel="icon" href="/favicon.ico" type="image/x-icon"><link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" crossorigin="anonymous"><link rel="stylesheet" href="/src/css/theme.css">
+    <title>Go-подпрограммы и каналы</title>
+    <meta name="description" content="Go обеспечивает два стиля параллельного программирования: 1) модель многопоточности с общей памятью и 2) go-подпрограммы (goroutines) вместе с каналами. go-подпрограммы (goroutines) и каналы поддерживают взаимодействующие последовательные процессы (communicating sequential processes — CSP), модель параллелизма, в которой между независимыми процессами (go-подпрограммами, горутинами) передаются значения, но переменные по большей части ограничиваются одним процессом">
+    <meta name="keywords" content="go-подпрограммы, каналы, goroutine, golang, go, seeker, website">
+</head><body>
+<header><div class="collapse bg-dark" id="navbarHeader"><div class="container"><div class="row"><div class="col-sm-8 col-md-7 py-4"><h4 class="text-white">О сайте</h4><p class="text-muted">Увлеченный разработчик или новичок ищущий решения и материалы по языку программирования Go - этот сайт для тебя. Здесь ты найдешь статьи, рецепты, образцы кода, полезные ссылки и конспекты по Golang.</p></div><div class="col-sm-4 offset-md-1 py-4"><h4 class="text-white">Контакты</h4><ul class="list-unstyled"><li><a href="mailto:gocmto@gmail.com" class="text-white">gocmto@gmail.com</a></li></ul></div></div></div></div><div class="navbar navbar-dark bg-dark shadow-sm"><div class="container d-flex justify-content-between"><a href="/" class="navbar-brand d-flex align-items-center"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" aria-hidden="true" class="mr-2" viewBox="0 0 24 24" focusable="false"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><strong>Golang</strong></a><button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarHeader" aria-controls="navbarHeader" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button></div></div></header>
+
+<main role="main">
+    <div class="container">
+        <h1>Go-подпрограммы и каналы</h1>
+        <p class="lead text-muted">
+            <strong>Параллельное программирование</strong>, выражение программы как композиции ряда автономных действий, никогда не было столь важным, как сегодня.
+            Веб-серверы одновременно обрабатывают запросы тысяч клиентов.
+            Приложения на планшетах и в телефонах визуализируют анимацию интерфейса пользователя
+            и одновременно <strong>в фоновом режиме</strong> выполняют вычисления и сетевые запросы.
+            Даже традиционные пакетные задачи — чтение некоторых входных данных, выполнение вычислений и запись некоторых выходных данных
+            — <code>используют параллелизм</code> для того, чтобы скрыть задержки операций ввода-вывода
+            и использовать множество процессоров современного компьютера,
+            количество которых с каждым годом растет все больше, в отличие от их скорости.
+        </p>
+        <p class="lead text-muted">
+            Go обеспечивает два стиля параллельного программирования: 1) модель многопоточности с общей памятью и 2) go-подпрограммы (goroutines) вместе с каналами.
+            go-подпрограммы (goroutines) и каналы поддерживают взаимодействующие последовательные процессы (communicating sequential processes — CSP),
+            модель параллелизма, в которой между независимыми процессами (go-подпрограммами, горутинами) передаются значения,
+            но переменные по большей части ограничиваются одним процессом.
+        </p>
+        <p class="lead text-muted">
+            Несмотря на то что <u>поддержка параллелизма в Go является одной из его самых сильных сторон</u>,
+            рассмотрение параллельных программ <strong>существенно труднее</strong>, чем последовательных,
+            а приобретенная при последовательном программировании интуиция может время от времени вводить в заблуждение.
+            Если это ваша первая встреча с параллелизмом - потратьте необходимое количество дополнительного времени на серьезные размышления над приводимыми здесь примерами.
+        </p>
+    </div>
+</main>
+
+<footer class="text-muted"><div class="container"><hr><p>&copy; 2020 | <a href="/">Go Seeker</a> | Ищущий Go | <a href="/list.html">Все материалы</a></p></div></footer>
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" crossorigin="anonymous"></script><script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
+<script src="/src/js/theme.js"></script>
+</body></html>
