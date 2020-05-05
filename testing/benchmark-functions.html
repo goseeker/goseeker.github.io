@@ -142,11 +142,11 @@ BenchmarklsPalindrome 2000000 807 ns/op 128 B/op 1 allocs/op</pre>
             Сравнительные показатели достигаются с помощью обычного кода.
             Они обычно принимают вид одной параметризованной функции, вызываемой из <strong>нескольких функций Benchmark</strong> с различными значениями, например:
         </p>
-        <ul>
-            <li>func benchmark(b *testing.B, size int) { /* ... */ }</li>
-            <li>func Benchmarkl0(b *testing.B) { benchmark(b, 10) }</li>
-            <li>func Benchmarkl00(b *testing.B) { benchmark(b, 100) }</li>
-            <li>func Benchmarkl000(b *testing.B) { benchmark(b, 1000) }</li>
+        <ul class="lead">
+            <li>func benchmark (b *testing.B, size int) { /* ... */ }</li>
+            <li>func Benchmark10 (b *testing.B) { benchmark(b, 10) }</li>
+            <li>func Benchmark100 (b *testing.B) { benchmark(b, 100) }</li>
+            <li>func Benchmark1000 (b *testing.B) { benchmark(b, 1000) }</li>
         </ul>
         <p class="lead text-muted">
             Параметр size, который определяет размер входных данных, варьируется для разных функций,
